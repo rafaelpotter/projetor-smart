@@ -1,22 +1,31 @@
 import numpy as np
-import cv2
+import cv2 as cv
 
 def read_webcam():
-    cap = cv2.VideoCapture('data\laser_tests_trim.mp4') # use (0) for webcam
+    cap = cv.VideoCapture('data\laser_tests_trim.mp4') # use (0) for webcam
+    # Frames da webcam
+    ret, frame = cap.read()
+    blank = np.zeros(frame.shape, dtype='uint8')
 
     while True:
         ret, frame = cap.read()
+        # Transformar para escala de cinza e aplicar threshold
+        # Analisar histograma de testes para validar melhor threshold
+        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        threshold, thresh = cv.threshold(gray, 150, 255, cv.THRESH_BINARY)
 
-        cv2.imshow('frame', frame)
+        # Achar contornos
+        contours, hier = cv.findContours(thresh, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
-        blank_Image = np.zeros(frame.shape, np.uint8)
-        cv2.imshow('blank_Image', blank_Image)
+        # Desenhar contornos em canvas escuro
+        contours_generated = cv.drawContours(blank, contours, -1, (0,0,255), -1)
+        cv.imshow('contours blank', contours_generated)
 
-        if cv2.waitKey(1) == ord('q'):
+        if cv.waitKey(1) == ord('q'):
             break
 
     cap.release()
-    cv2.destroyAllWindows()
+    cv.destroyAllWindows()
 
 if __name__ == "__main__":
     read_webcam()
