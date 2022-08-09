@@ -1,15 +1,16 @@
 import numpy as np
 import cv2 as cv
+import time
 
 def read_webcam(webcam):
-    # webcam standard = 0
+    # para usar webcam, webcam=0
     cap = cv.VideoCapture(webcam)
-
     if not cap.isOpened():
         print("Error opening video")
 
-    # size = (int(cap.get(3)), int(cap.get(4)))
-    # print(size)
+    fps= int(cap.get(cv.CAP_PROP_FPS))
+
+    # Criar canvas simulando quadro de projeção
     status, frame = cap.read()
     blank = np.zeros(frame.shape, dtype='uint8')
 
@@ -27,7 +28,15 @@ def read_webcam(webcam):
 
             # Desenhar contornos em canvas escuro
             contours_generated = cv.drawContours(blank, contours, -1, (0,0,255), -1)
-            cv.imshow('contours blank', contours_generated)
+
+            time.sleep(1/fps)
+            cv.namedWindow("projetor", cv.WINDOW_NORMAL)
+            cv.setWindowProperty("projetor", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+            cv.imshow('projetor', contours_generated)
+
+        else:
+            print("Video file finished. Total Frames: %d" % (cap.get(cv.CAP_PROP_FRAME_COUNT)))
+            break
 
         if cv.waitKey(1) == ord('q'):
             break
