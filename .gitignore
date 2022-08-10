@@ -1,3 +1,5 @@
 /.virtenv
 /.vscode
 /standard_data
+
+__pycache__
