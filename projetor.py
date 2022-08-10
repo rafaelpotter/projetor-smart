@@ -1,27 +1,31 @@
 import numpy as np
 import cv2 as cv
-import time
+import os
 
 def read_webcam(webcam):
-    # para usar webcam, webcam=0
-    cap = cv.VideoCapture(webcam)
-    if not cap.isOpened():
-        print("Error opening video")
+    # Alteração de env variable para resolver bug de lentidão na inicialização de camera logitech
+    # https://github.com/opencv/opencv/issues/17687
+    os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 
-    fps= int(cap.get(cv.CAP_PROP_FPS))
+    # Inicialização da câmera
+    cap = cv.VideoCapture(webcam, cv.CAP_DSHOW)
+
+    if not cap.isOpened():
+        print("Erro ao abrir a webcam")
+        exit()
 
     # Criar canvas simulando quadro de projeção
     status, frame = cap.read()
     blank = np.zeros(frame.shape, dtype='uint8')
 
     while (cap.isOpened()):
-        # Frames da webcam
+        # Execução a cada frame da webcam
         status, frame = cap.read()
         if status:
             # Transformar para escala de cinza e aplicar threshold
             # Analisar histograma de testes para validar melhor threshold
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            threshold, thresh = cv.threshold(gray, 150, 255, cv.THRESH_BINARY_INV)
+            threshold, thresh = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
 
             # Achar contornos
             contours, hier = cv.findContours(thresh, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
@@ -29,13 +33,12 @@ def read_webcam(webcam):
             # Desenhar contornos em canvas escuro
             contours_generated = cv.drawContours(blank, contours, -1, (0,0,255), -1)
 
-            time.sleep(1/fps)
             cv.namedWindow("projetor", cv.WINDOW_NORMAL)
             cv.setWindowProperty("projetor", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
             cv.imshow('projetor', contours_generated)
 
         else:
-            print("Video file finished. Total Frames: %d" % (cap.get(cv.CAP_PROP_FRAME_COUNT)))
+            print("Arquivo de vídeo terminou. Número total de frames: %d" % (cap.get(cv.CAP_PROP_FRAME_COUNT)))
             break
 
         if cv.waitKey(1) == ord('q'):
@@ -45,5 +48,5 @@ def read_webcam(webcam):
     cv.destroyAllWindows()
 
 if __name__ == "__main__":
-    read_webcam('standard_data\laser_emulation.mp4')
+    read_webcam(0)
     
