@@ -1,0 +1,9 @@
+# Pasta padrões de projetos e vscode
+/.virtenv
+/.vscode
+
+# Pasta de vídeos para testes iniciais
+/standard_data
+
+# Arquivos padrões de python
+__pycache__
