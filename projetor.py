@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import os
+import datetime
 
 def read_webcam(webcam):
     # Alteração de env variable para resolver bug de lentidão na inicialização de camera logitech
@@ -31,7 +32,7 @@ def read_webcam(webcam):
             contours, hier = cv.findContours(thresh, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
             # Desenhar contornos em canvas escuro
-            contours_generated = cv.drawContours(blank, contours, -1, (0,0,255), -1)
+            contours_generated = cv.drawContours(blank, contours, -1, (10,10,200), -1)
 
             cv.namedWindow("projetor", cv.WINDOW_NORMAL)
             cv.setWindowProperty("projetor", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
@@ -41,8 +42,18 @@ def read_webcam(webcam):
             print("Arquivo de vídeo terminou. Número total de frames: %d" % (cap.get(cv.CAP_PROP_FRAME_COUNT)))
             break
 
-        if cv.waitKey(1) == ord('q'):
+        key = cv.waitKey(1)
+        # Esperar por tecla "q" para sair
+        if key == ord('q'):
             break
+        # Esperar por tecla "l" para limpar a tela
+        elif key == ord('l'):
+            blank = np.zeros(frame.shape, dtype='uint8')
+        # Esperar por tecla "s" para salvar imagem
+        elif key == ord('s'):
+            ct = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            cv.imwrite(f'./imagens/projetor_{ct}.jpg', contours_generated)
+            print(f"Imagem salva em ./imagens/projetor_{ct}.jpg")
 
     cap.release()
     cv.destroyAllWindows()
