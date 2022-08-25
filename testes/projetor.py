@@ -21,12 +21,14 @@ def calibrate(webcam):
         print("Erro ao abrir a webcam")
         exit()
 
+    # Exibir imagem de calibragem
     show_image('../calibration_images/camera_position.png')
 
     while (cap.isOpened()):
         # Execução a cada frame da webcam
         status, frame = cap.read()
         if status:
+            # Criar uma máscara que representa apenas um intervalo de vermelho
             lower_red = np.array([0, 0, 60])
             upper_red = np.array([70, 70, 255])
             mask = cv.inRange(frame, lower_red, upper_red)
@@ -34,20 +36,21 @@ def calibrate(webcam):
             # Achar contornos
             contours, hier = cv.findContours(mask, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
-            # Achar maior contorno
+            # Calcular maior contorno
             cnt = contours[0]
             for cont in contours:
                 if cv.contourArea(cont) > cv.contourArea(cnt):
                     cnt = cont
 
-
+            # Aproximar maior contorno por um polígono
             epsilon = 0.01*cv.arcLength(cnt,True)
             approx = cv.approxPolyDP(cnt,epsilon,True)
 
-            # Desenhar contornos na imagem canvas escuro
+            # Desenhar contorno do polígono na imagem
             mask_draw = mask.copy()
             mask_draw = cv.cvtColor(mask_draw, cv.COLOR_GRAY2BGR)
             contours_generated = cv.drawContours(mask_draw, [approx], -1, (0,0,255), 3)
+            print(f'Número de pontos do polígono: {len(approx)}')
 
             # cv.namedWindow("projetor", cv.WINDOW_NORMAL)
             # cv.setWindowProperty("projetor", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
